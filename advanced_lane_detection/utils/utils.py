@@ -292,7 +292,7 @@ def measure_pos_in_lane(img):
     # Lane is 3.7 meters wide.
     # Camera is mounted at the center of the vehicle.
     # Find center of the lane and compute offset with center of the camera.
-
+    # TODO change method. Doesnt work for dotted lines. Consider the polynomial and take the first two points.
     xm_per_pix = 3.7 / 700  # meters per pixel in x dimension
 
     # Take a histogram of the bottom of the image
