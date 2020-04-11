@@ -6,5 +6,5 @@ imgpoints = []
 objpoints = []
 
 # Create two istances of the lane class for the left and right lane
-lane_sx = lane.Line()
-lane_dx = lane.Line()
+left_lane = lane.Line()
+right_lane = lane.Line()

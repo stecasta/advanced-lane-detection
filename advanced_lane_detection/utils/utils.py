@@ -3,6 +3,7 @@ import numpy as np
 import cv2
 import matplotlib.pyplot as plt
 import matplotlib.image as mpimg
+from advanced_lane_detection import config
 
 
 def calibrate_cam(images, nx, ny):
@@ -89,16 +90,16 @@ def warp(img):
     img_size = (img.shape[1], img.shape[0])
 
     src = np.float32(
-        [[255, 674],
-         [1055, 674],
-         [590, 450],
-         [690, 450]])
+        [[203, 720],
+         [1127, 720],
+         [585, 460],
+         [695, 460]])
 
     dst = np.float32(
-        [[300, img.shape[0]],
-         [950, img.shape[0]],
-         [300, 0],
-         [950, 0]])
+        [[320, 720],
+         [960, 720],
+         [320, 0],
+         [960, 0]])
 
     M = cv2.getPerspectiveTransform(src, dst)
 
@@ -110,16 +111,16 @@ def unwarp(img):
     img_size = (img.shape[1], img.shape[0])
 
     src = np.float32(
-        [[255, 674],
-         [1055, 674],
-         [590, 450],
-         [690, 450]])
+        [[203, 720],
+         [1127, 720],
+         [585, 460],
+         [695, 460]])
 
     dst = np.float32(
-        [[300, img.shape[0]],
-         [950, img.shape[0]],
-         [300, 0],
-         [950, 0]])
+        [[320, 720],
+         [960, 720],
+         [320, 0],
+         [960, 0]])
 
     Minv = cv2.getPerspectiveTransform(dst, src)
 
@@ -210,21 +211,109 @@ def find_lane_pixels(binary_warped):
 
     return leftx, lefty, rightx, righty, out_img
 
+def search_around_poly(binary_warped):
+    # HYPERPARAMETER
+    # Choose the width of the margin around the previous polynomial to search
+    margin = 100
+
+    # Grab activated pixels
+    nonzero = binary_warped.nonzero()
+    nonzeroy = np.array(nonzero[0])
+    nonzerox = np.array(nonzero[1])
+
+    ### Set the area of search based on activated x-values ###
+    ### within the +/- margin of our polynomial function ###
+    ### Consider the window areas for the similarly named variables ###
+    ### in the previous quiz, but change the windows to our new search area ###
+    left_fit = config.left_lane.current_fit
+    right_fit = config.right_lane.current_fit
+
+    left_lane_inds = ((nonzerox > (left_fit[0] * (nonzeroy ** 2) + left_fit[1] * nonzeroy +
+                                   left_fit[2] - margin)) & (nonzerox < (left_fit[0] * (nonzeroy ** 2) +
+                                                                         left_fit[1] * nonzeroy + left_fit[
+                                                                             2] + margin)))
+    right_lane_inds = ((nonzerox > (right_fit[0] * (nonzeroy ** 2) + right_fit[1] * nonzeroy +
+                                    right_fit[2] - margin)) & (nonzerox < (right_fit[0] * (nonzeroy ** 2) +
+                                                                           right_fit[1] * nonzeroy + right_fit[
+                                                                               2] + margin)))
+
+    # Extract left and right line pixel positions
+    leftx = nonzerox[left_lane_inds]
+    lefty = nonzeroy[left_lane_inds]
+    rightx = nonzerox[right_lane_inds]
+    righty = nonzeroy[right_lane_inds]
+
+    # Fit new polynomials
+    # left_fitx, right_fitx, ploty = fit_poly(binary_warped.shape, leftx, lefty, rightx, righty)
+    # config.left_lane.current_fit
+    # config.right_lane.current_fit
+
+    # ## Visualization ##
+    # Create an image to draw on and an image to show the selection window
+    out_img = np.dstack((binary_warped, binary_warped, binary_warped)) * 255
+    window_img = np.zeros_like(out_img)
+    # Color in left and right line pixels
+    out_img[nonzeroy[left_lane_inds], nonzerox[left_lane_inds]] = [255, 0, 0]
+    out_img[nonzeroy[right_lane_inds], nonzerox[right_lane_inds]] = [0, 0, 255]
+    #
+    # # Generate a polygon to illustrate the search window area
+    # # And recast the x and y points into usable format for cv2.fillPoly()
+    # left_line_window1 = np.array([np.transpose(np.vstack([left_fitx - margin, ploty]))])
+    # left_line_window2 = np.array([np.flipud(np.transpose(np.vstack([left_fitx + margin,
+    #                                                                 ploty])))])
+    # left_line_pts = np.hstack((left_line_window1, left_line_window2))
+    # right_line_window1 = np.array([np.transpose(np.vstack([right_fitx - margin, ploty]))])
+    # right_line_window2 = np.array([np.flipud(np.transpose(np.vstack([right_fitx + margin,
+    #                                                                  ploty])))])
+    # right_line_pts = np.hstack((right_line_window1, right_line_window2))
+    #
+    # # Draw the lane onto the warped blank image
+    # cv2.fillPoly(window_img, np.int_([left_line_pts]), (0, 255, 0))
+    # cv2.fillPoly(window_img, np.int_([right_line_pts]), (0, 255, 0))
+    # result = cv2.addWeighted(out_img, 1, window_img, 0.3, 0)
+    #
+    # # Plot the polynomial lines onto the image
+    # plt.plot(left_fitx, ploty, color='yellow')
+    # plt.plot(right_fitx, ploty, color='yellow')
+    # ## End visualization steps ##
+
+    return leftx, lefty, rightx, righty, out_img
+
 def fit_polynomial(binary_warped):
     # Find our lane pixels first
-    leftx, lefty, rightx, righty, out_img = find_lane_pixels(binary_warped)
+    if (config.left_lane.detected):
+        leftx, lefty, rightx, righty, out_img = search_around_poly(binary_warped)
+    else:
+        leftx, lefty, rightx, righty, out_img = find_lane_pixels(binary_warped)
 
     # Fit a second order polynomial to each using `np.polyfit`
-    left_fit = np.polyfit(lefty, leftx, 2)
-    right_fit = np.polyfit(righty, rightx, 2)
+    config.left_lane.current_fit = np.polyfit(lefty, leftx, 2)
+    config.right_lane.current_fit = np.polyfit(righty, rightx, 2)
+
+    # Sanity check: The two polynomials should have similar slope. Slope of parabola is 2ax + b. I check at x = 0.
+    if (np.absolute(config.left_lane.current_fit[1] - config.right_lane.current_fit[1]) < 0.2 ):
+        config.left_lane.sanity_slope = True
+    else:
+        config.left_lane.sanity_slope = False
+
+    # Append to list of recent fits if sanity check is passed
+    if (config.left_lane.sanity_slope):
+        config.left_lane.fits.append(config.left_lane.current_fit)
+        config.right_lane.fits.append(config.right_lane.current_fit)
+    # Average of last 10 computed poly (if less than 10 frames are computed average all elements)
+    config.left_lane.best_fit = sum(config.left_lane.fits[len(config.left_lane.fits) - np.min([10,len(config.left_lane.fits)]):]) / np.min([10,len(config.left_lane.fits)])
+    config.right_lane.best_fit = sum(config.right_lane.fits[len(config.right_lane.fits) - np.min([10,len(config.right_lane.fits)]):]) / np.min([10,len(config.right_lane.fits)])
+
     # Generate x and y values for plotting
     ploty = np.linspace(0, binary_warped.shape[0] - 1, binary_warped.shape[0])
     try:
-        left_fitx = left_fit[0] * ploty ** 2 + left_fit[1] * ploty + left_fit[2]
-        right_fitx = right_fit[0] * ploty ** 2 + right_fit[1] * ploty + right_fit[2]
+        left_fitx = config.left_lane.best_fit[0] * ploty ** 2 + config.left_lane.best_fit[1] * ploty + config.left_lane.best_fit[2]
+        right_fitx = config.right_lane.best_fit[0] * ploty ** 2 + config.right_lane.best_fit[1] * ploty + config.right_lane.best_fit[2]
+        config.left_lane.detected = True
     except TypeError:
         # Avoids an error if `left` and `right_fit` are still none or incorrect
         print('The function failed to fit a line!')
+        config.left_lane.detected = False
         left_fitx = 1 * ploty ** 2 + 1 * ploty
         right_fitx = 1 * ploty ** 2 + 1 * ploty
 
@@ -236,8 +325,8 @@ def fit_polynomial(binary_warped):
 
     ## Visualization ##
     # Colors in the left and right lane regions
-    out_img[lefty, leftx] = [255, 0, 0]
-    out_img[righty, rightx] = [0, 0, 255]
+    # out_img[lefty, leftx] = [255, 0, 0]
+    # out_img[righty, rightx] = [0, 0, 255]
 
     # Prepare points to be used to defined the lane region.
     draw_points_l = (np.asarray([left_fitx, ploty]).T).astype(np.int32)  # needs to be int32 and transposed
@@ -254,7 +343,7 @@ def fit_polynomial(binary_warped):
 
     return out_img, ploty, left_fit_cr, right_fit_cr
 
-def weighted_img(img, initial_img, α=0.8, β=1., γ=0.):
+def weighted_img(img, initial_img, α, β, γ):
     """
     `img` is the output of the hough_lines(), An image with lines drawn on it.
     Should be a blank image (all black) with lines drawn on it.
@@ -267,6 +356,7 @@ def weighted_img(img, initial_img, α=0.8, β=1., γ=0.):
     NOTE: initial_img and img must be the same shape!
     """
     return cv2.addWeighted(initial_img, α, img, β, γ)
+
 
 def measure_curvature(ploty, left_fit_cr, right_fit_cr):
     '''
@@ -286,29 +376,58 @@ def measure_curvature(ploty, left_fit_cr, right_fit_cr):
     right_curverad = ((1 + (2 * right_fit_cr[0] * y_eval * ym_per_pix + right_fit_cr[1]) ** 2) ** 1.5) / np.absolute(
         2 * right_fit_cr[0])
 
+    # Sanity check
+    if (np.absolute(right_curverad - left_curverad) or right_curverad > 5000):
+        config.left_lane.sanity_curverad = True
+    else:
+        config.left_lane.sanity_curverad = False
+
+    # Append to list of computed curverads if sanity check is passed
+    if (config.left_lane.sanity_curverad):
+        config.left_lane.curverads.append(left_curverad)
+        config.right_lane.curverads.append(right_curverad)
+
+    # Average of last 30 computed curverads (if less than 30 frames are computed average all elements)
+    left_curverad = sum(config.left_lane.curverads[len(config.left_lane.curverads) - np.min([30,len(config.left_lane.curverads)]):]) / np.min([30,len(config.left_lane.curverads)])
+    right_curverad = sum(config.right_lane.curverads[len(config.right_lane.curverads) - np.min([30,len(config.right_lane.curverads)]):]) / np.min([30,len(config.right_lane.curverads)])
+
     return left_curverad, right_curverad
 
 def measure_pos_in_lane(img):
     # Lane is 3.7 meters wide.
     # Camera is mounted at the center of the vehicle.
     # Find center of the lane and compute offset with center of the camera.
-    # TODO change method. Doesnt work for dotted lines. Consider the polynomial and take the first two points.
     xm_per_pix = 3.7 / 700  # meters per pixel in x dimension
 
-    # Take a histogram of the bottom of the image
-    histogram = np.sum(img[670:690, :], axis=0)
+    # Retrieve poly
+    if (config.left_lane.detected):
+        left_fit = config.left_lane.best_fit
+        right_fit = config.right_lane.best_fit
+    else:
+        left_fit = config.left_lane.current_fit
+        right_fit = config.right_lane.current_fit
 
-    # Find the peak of the left and right halves of the histogram
-    # These will be the starting point for the left and right lines
-    midpoint = np.int(histogram.shape[0] // 2)
-    leftx_base = np.argmax(histogram[:midpoint])
-    rightx_base = np.argmax(histogram[midpoint:]) + midpoint
-    # print(leftx_base, rightx_base)
-    pos  = (leftx_base + rightx_base) / 2
-    # print(pos - img.shape[1] / 2)
-    offset = ((img.shape[1] / 2) - pos) * xm_per_pix
-    # print(offset)
-    return offset
+    # Find distance from left and right lane for a given y value
+    left_dist = left_fit[0] * img.shape[0] ** 2 + left_fit[1] * img.shape[0] + left_fit[2]
+    right_dist = right_fit[0] * img.shape[0] ** 2 + right_fit[1] * img.shape[0] + right_fit[2]
+
+    pos = (left_dist + right_dist) / 2
+    offset_m = ((img.shape[1] / 2) - pos) * xm_per_pix
+
+    # Sanity check
+    if ((right_dist - left_dist) * xm_per_pix > 3.0 and (right_dist - left_dist) * xm_per_pix < 4.4):
+        config.left_lane.sanity_offset  = True
+    else:
+        config.left_lane.sanity_offset = False
+
+    # Append to list of computed offsets if sanity check is passed
+    if config.left_lane.sanity_offset:
+        config.left_lane.line_offsets.append(offset_m)
+
+    # Average of last 30 computed offsets (if less than 30 frames are computed average all elements)
+    offset_m_avg = sum(config.left_lane.line_offsets[len(config.right_lane.line_offsets) - np.min([30,len(config.left_lane.line_offsets)]):]) / np.min([30,len(config.left_lane.line_offsets)])
+
+    return offset_m_avg
 
 def write_on_image(img, text, bottomLeftCornerOfText):
     # Write some Text

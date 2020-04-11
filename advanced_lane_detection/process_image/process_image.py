@@ -9,9 +9,6 @@ from advanced_lane_detection.process_image import lane
 
 def process_image(image):
 
-    # # Read the image.
-    # image = mpimg.imread("../test_images/test2.jpg")
-
     # Undistort image.
     undistorted = utils.cal_undistort(image, config.objpoints, config.imgpoints)
 
@@ -50,11 +47,11 @@ def process_image(image):
     unwarped_img = utils.unwarp(lanes_img)
 
     # Merge the two images.
-    output_img = utils.weighted_img(image, unwarped_img, α=0.8, β=1., γ=0.)
+    output_img = utils.weighted_img(image, unwarped_img, α=0.3, β=1, γ=0.)
 
     # Calculate the radius of curvature in meters for both lane lines.
-    config.lane_sx.curverad, config.lane_dx.curverad = utils.measure_curvature(ploty, left_fit_real, right_fit_real)
-    curverad = int((config.lane_sx.curverad + config.lane_dx.curverad) / 2)
+    config.left_lane.curverad, config.right_lane.curverad = utils.measure_curvature(ploty, left_fit_real, right_fit_real)
+    curverad = int((config.left_lane.curverad + config.right_lane.curverad) / 2)
 
     # Calculate position of the vehicle in the lane.
     offset = utils.measure_pos_in_lane(binary_img)
@@ -70,7 +67,7 @@ def process_image(image):
     utils.write_on_image(output_img, text2, (80, 120))
 
     # # Plot.
-    # f, (ax1, ax2) = plt.subplots(1, 2, figsize=(20,10))
+    # f, (ax1, ax2) = plt.subplots(1, 2, figsize=(20, 10))
     # ax1.set_title('Source')
     # ax1.imshow(image)
     # ax2.set_title('Lanes')
