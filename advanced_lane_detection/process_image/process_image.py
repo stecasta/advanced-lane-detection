@@ -3,22 +3,17 @@ import cv2
 import matplotlib.pyplot as plt
 import matplotlib.image as mpimg
 from advanced_lane_detection.utils import utils
-import glob
+from advanced_lane_detection import config
+from advanced_lane_detection.process_image import lane
+
 
 def process_image(image):
 
     # # Read the image.
     # image = mpimg.imread("../test_images/test2.jpg")
 
-    images = glob.glob('../camera_cal/calibration*.jpg')  # images used for camera calibration
-
-    # Calibrate camera.
-    nx = 9  # number of inside corners in x
-    ny = 6  # number of inside corners in y
-    imgpoints, objpoints = utils.calibrate_cam(images, nx, ny)
-
     # Undistort image.
-    undistorted = utils.cal_undistort(image, objpoints, imgpoints)
+    undistorted = utils.cal_undistort(image, config.objpoints, config.imgpoints)
 
     # Create thresholded binary image.
     s_thresh=(170, 255) # saturation channel threshold
@@ -58,8 +53,8 @@ def process_image(image):
     output_img = utils.weighted_img(image, unwarped_img, α=0.8, β=1., γ=0.)
 
     # Calculate the radius of curvature in meters for both lane lines.
-    left_curverad, right_curverad = utils.measure_curvature(ploty, left_fit_real, right_fit_real)
-    curverad = int((left_curverad + right_curverad) / 2)
+    config.lane_sx.curverad, config.lane_dx.curverad = utils.measure_curvature(ploty, left_fit_real, right_fit_real)
+    curverad = int((config.lane_sx.curverad + config.lane_dx.curverad) / 2)
 
     # Calculate position of the vehicle in the lane.
     offset = utils.measure_pos_in_lane(binary_img)
