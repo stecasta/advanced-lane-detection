@@ -243,11 +243,6 @@ def search_around_poly(binary_warped):
     rightx = nonzerox[right_lane_inds]
     righty = nonzeroy[right_lane_inds]
 
-    # Fit new polynomials
-    # left_fitx, right_fitx, ploty = fit_poly(binary_warped.shape, leftx, lefty, rightx, righty)
-    # config.left_lane.current_fit
-    # config.right_lane.current_fit
-
     # ## Visualization ##
     # Create an image to draw on and an image to show the selection window
     out_img = np.dstack((binary_warped, binary_warped, binary_warped)) * 255
@@ -255,27 +250,6 @@ def search_around_poly(binary_warped):
     # Color in left and right line pixels
     out_img[nonzeroy[left_lane_inds], nonzerox[left_lane_inds]] = [255, 0, 0]
     out_img[nonzeroy[right_lane_inds], nonzerox[right_lane_inds]] = [0, 0, 255]
-    #
-    # # Generate a polygon to illustrate the search window area
-    # # And recast the x and y points into usable format for cv2.fillPoly()
-    # left_line_window1 = np.array([np.transpose(np.vstack([left_fitx - margin, ploty]))])
-    # left_line_window2 = np.array([np.flipud(np.transpose(np.vstack([left_fitx + margin,
-    #                                                                 ploty])))])
-    # left_line_pts = np.hstack((left_line_window1, left_line_window2))
-    # right_line_window1 = np.array([np.transpose(np.vstack([right_fitx - margin, ploty]))])
-    # right_line_window2 = np.array([np.flipud(np.transpose(np.vstack([right_fitx + margin,
-    #                                                                  ploty])))])
-    # right_line_pts = np.hstack((right_line_window1, right_line_window2))
-    #
-    # # Draw the lane onto the warped blank image
-    # cv2.fillPoly(window_img, np.int_([left_line_pts]), (0, 255, 0))
-    # cv2.fillPoly(window_img, np.int_([right_line_pts]), (0, 255, 0))
-    # result = cv2.addWeighted(out_img, 1, window_img, 0.3, 0)
-    #
-    # # Plot the polynomial lines onto the image
-    # plt.plot(left_fitx, ploty, color='yellow')
-    # plt.plot(right_fitx, ploty, color='yellow')
-    # ## End visualization steps ##
 
     return leftx, lefty, rightx, righty, out_img
 
@@ -306,10 +280,13 @@ def fit_polynomial(binary_warped):
     else:
         config.left_lane.sanity_slope = False
 
-    # Append to list of recent fits if sanity check is passed
-    if (config.left_lane.sanity_slope):
+    # Append to list of recent fits if sanity check is passed or it's the first frame
+    if (config.left_lane.sanity_slope or config.left_lane.first_frame):
         config.left_lane.fits.append(config.left_lane.current_fit)
         config.right_lane.fits.append(config.right_lane.current_fit)
+
+    config.left_lane.first_frame = False
+
     # Average of last 10 computed poly (if less than 10 frames are computed average all elements)
     config.left_lane.best_fit = sum(config.left_lane.fits[len(config.left_lane.fits) - np.min([10,len(config.left_lane.fits)]):]) / np.min([10,len(config.left_lane.fits)])
     config.right_lane.best_fit = sum(config.right_lane.fits[len(config.right_lane.fits) - np.min([10,len(config.right_lane.fits)]):]) / np.min([10,len(config.right_lane.fits)])
@@ -392,8 +369,8 @@ def measure_curvature(ploty, left_fit_cr, right_fit_cr):
     else:
         config.left_lane.sanity_curverad = False
 
-    # Append to list of computed curverads if sanity check is passed and it's not the frist frame
-    if config.left_lane.sanity_curverad and config.left_lane.detected:
+    # Append to list of computed curverads if sanity check is passed or it's the first frame
+    if config.left_lane.sanity_curverad or config.left_lane.first_frame:
         config.left_lane.curverads.append(left_curverad)
         config.right_lane.curverads.append(right_curverad)
 
@@ -430,9 +407,9 @@ def measure_pos_in_lane(img):
         config.left_lane.sanity_offset = True
     else:
         config.left_lane.sanity_offset = False
-    print(computed_lane_width)
+
     # Append to list of computed offsets if sanity check is passed and it's not the first frame
-    if config.left_lane.sanity_offset and config.left_lane.detected:
+    if config.left_lane.sanity_offset or config.left_lane.first_frame:
         config.left_lane.line_offsets.append(offset_m)
 
     # Average of last 30 computed offsets (if less than 30 frames are computed average all elements)

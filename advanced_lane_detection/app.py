@@ -15,16 +15,16 @@ def run():
     config.imgpoints, config.objpoints = utils.calibrate_cam(images, nx, ny)
 
     # # Test on image
-    # image = mpimg.imread("../test_images/test6.jpg")
+    # image = mpimg.imread("../test_images/test2.jpg")
     # output_img = process_image.process_image(image)
-    # plt.imshow(image)
+    # plt.imshow(output_img)
     # plt.waitforbuttonpress()
 
     # Process video.
-    white_output = 'project_video_output1.mp4'
+    white_output = 'challenge_video_output.mp4'
     ## You can uncomment the following line for a subclip of the first 5 seconds
     # clip1 = VideoFileClip("project_video.mp4").subclip(0,5)
-    clip1 = VideoFileClip("project_video.mp4")
+    clip1 = VideoFileClip("challenge_video.mp4")
     white_clip = clip1.fl_image(process_image.process_image) #NOTE: this function expects color images!!
     white_clip.write_videofile(white_output, audio=False)
 

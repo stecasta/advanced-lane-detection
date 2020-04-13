@@ -3,6 +3,8 @@ import numpy as np
 # Define a class to receive the characteristics of each line detection
 class Line():
     def __init__(self):
+        # first frame
+        self.first_frame = True
         # was the line detected in the last iteration?
         self.detected = False
         # polynomial coefficients of the last n fits

@@ -22,23 +22,22 @@ def process_image(image):
     # Warp image.
     warped_img = utils.warp(binary_img)
 
-    # cv2.line(image, (255, 674), (1055, 674), (255, 0, 0), 4)
-    # cv2.line(image, (1055, 674), (690, 450), (255, 0, 0), 4)
-    # cv2.line(image, (590, 450), (690, 450), (255, 0, 0), 4)
-    # cv2.line(image, (590, 450), (255, 674), (255, 0, 0), 4)
+    # cv2.line(image, (203, 720), (1127, 720), (255, 0, 0), 4)
+    # cv2.line(image, (585, 460), (695, 460), (255, 0, 0), 4)
+    # cv2.line(image, (203, 720), (585, 460), (255, 0, 0), 4)
+    # cv2.line(image, (1127, 720), (695, 460), (255, 0, 0), 4)
     #
-    # cv2.line(warped_img, (300, 0), (950, 0), (255, 0, 0), 4)
-    # cv2.line(warped_img, (300, warped_img.shape[0]), (950, warped_img.shape[0]), (255, 0, 0), 4)
-    # cv2.line(warped_img, (300, warped_img.shape[0]), (300, 0), (255, 0, 0), 4)
-    # cv2.line(warped_img, (950, warped_img.shape[0]), (950, 0), (255, 0, 0), 4)
-    #
-    # f, (ax1, ax2) = plt.subplots(1, 2, figsize=(20,10))
-    # ax1.set_title('Source')
-    # ax1.imshow(image)
-    # ax2.set_title('Lanes')
-    # ax2.imshow(warped_img)
-    # plt.waitforbuttonpress()
+    # cv2.line(warped_img, (320, 0), (960, 0), (255, 0, 0), 4)
+    # cv2.line(warped_img, (320, 720), (950, 720), (255, 0, 0), 4)
+    # cv2.line(warped_img, (320, 720), (320, 0), (255, 0, 0), 4)
+    # cv2.line(warped_img, (960, 720), (960, 0), (255, 0, 0), 4)
 
+    # f, (ax1, ax2) = plt.subplots(1, 2, figsize=(20,10))
+    # ax1.set_title('Original image')
+    # ax1.imshow(image)
+    # ax2.set_title('Undistorted image')
+    # ax2.imshow(undistorted)
+    # plt.waitforbuttonpress()
 
     # Find lanes.
     lanes_img, ploty, left_fit_real, right_fit_real = utils.fit_polynomial(warped_img)
