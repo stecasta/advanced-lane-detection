@@ -5,10 +5,6 @@ class Line():
     def __init__(self):
         # was the line detected in the last iteration?
         self.detected = False
-        # # x values of the last n fits of the line
-        # self.recent_xfitted = []
-        # # average x values of the fitted line over the last n iterations
-        # self.bestx = None
         # polynomial coefficients of the last n fits
         self.fits = []
         # polynomial coefficients averaged over the last n iterations
@@ -24,9 +20,6 @@ class Line():
         # Sanity check on curverad: the two lines have similar curverad
         self.sanity_curverad = False
         # Sanity check on slope: the two lanes should have similar slopes
-        # # difference in fit coefficients between last and new fits
-        # self.diffs = np.array([0,0,0], dtype='float')
-        # # x values for detected line pixels
-        # self.allx = None
-        # # y values for detected line pixels
-        # self.ally = None
+        self.sanity_slope = False
+        # Sanity check counter to keep track of how many frames in a row had a check that didn't pass
+        self.sanity_counter = 0

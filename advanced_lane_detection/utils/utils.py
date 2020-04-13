@@ -280,8 +280,18 @@ def search_around_poly(binary_warped):
     return leftx, lefty, rightx, righty, out_img
 
 def fit_polynomial(binary_warped):
-    # Find our lane pixels first
-    if (config.left_lane.detected):
+
+    # Check for how many frames in a row the sanity check didn't pass
+    if (config.left_lane.sanity_slope):
+        config.left_lane.sanity_counter += 1
+    else:
+        config.left_lane.sanity_counter = 0
+
+    # Find our lane pixels
+    # For the first frame we use the slower algorithm "find_lane_pixels" . If a polynomial is found, for the next
+    # frames we use the faster "search_around_poly". In the case the sanity check doesn't pass for more than 60
+    # frames, we go back to the first algorithm.
+    if (config.left_lane.detected and config.left_lane.sanity_counter < 60):
         leftx, lefty, rightx, righty, out_img = search_around_poly(binary_warped)
     else:
         leftx, lefty, rightx, righty, out_img = find_lane_pixels(binary_warped)
@@ -377,13 +387,13 @@ def measure_curvature(ploty, left_fit_cr, right_fit_cr):
         2 * right_fit_cr[0])
 
     # Sanity check
-    if (np.absolute(right_curverad - left_curverad) or right_curverad > 5000):
+    if np.absolute(right_curverad - left_curverad):
         config.left_lane.sanity_curverad = True
     else:
         config.left_lane.sanity_curverad = False
 
-    # Append to list of computed curverads if sanity check is passed
-    if (config.left_lane.sanity_curverad):
+    # Append to list of computed curverads if sanity check is passed and it's not the frist frame
+    if config.left_lane.sanity_curverad and config.left_lane.detected:
         config.left_lane.curverads.append(left_curverad)
         config.right_lane.curverads.append(right_curverad)
 
@@ -415,13 +425,14 @@ def measure_pos_in_lane(img):
     offset_m = ((img.shape[1] / 2) - pos) * xm_per_pix
 
     # Sanity check
-    if ((right_dist - left_dist) * xm_per_pix > 3.0 and (right_dist - left_dist) * xm_per_pix < 4.4):
-        config.left_lane.sanity_offset  = True
+    computed_lane_width = (right_dist - left_dist) * xm_per_pix
+    if 3.2 < computed_lane_width < 4.2:
+        config.left_lane.sanity_offset = True
     else:
         config.left_lane.sanity_offset = False
-
-    # Append to list of computed offsets if sanity check is passed
-    if config.left_lane.sanity_offset:
+    print(computed_lane_width)
+    # Append to list of computed offsets if sanity check is passed and it's not the first frame
+    if config.left_lane.sanity_offset and config.left_lane.detected:
         config.left_lane.line_offsets.append(offset_m)
 
     # Average of last 30 computed offsets (if less than 30 frames are computed average all elements)

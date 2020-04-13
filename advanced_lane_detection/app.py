@@ -31,7 +31,7 @@ config.imgpoints, config.objpoints = utils.calibrate_cam(images, nx, ny)
 
 
 # Process video.
-white_output = '../project_video_output4.mp4'
+white_output = '../project_video_output5.mp4'
 ## You can uncomment the following line for a subclip of the first 5 seconds
 # clip1 = VideoFileClip("../project_video.mp4").subclip(20,25)
 clip1 = VideoFileClip("../project_video.mp4")
