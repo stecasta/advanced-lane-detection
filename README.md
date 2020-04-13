@@ -55,7 +55,8 @@ Usage
 **Step 3 (optional):** Change the line `clip1 = VideoFileClip("../project_video.mp4")
 ` in "app.py" to load your own video. 
 
-**Step 4:** Run the script. The output video will be saved as "project_video_output.mp4" `python -m advanced_lane_detection`. (If you have both python 2 and 3 installed run `python3 -m advanced_lane_detection`).
+**Step 4:** Run the script. The output video will be saved as "project_video_output1.mp4" `python -m
+ advanced_lane_detection`. (If you have both python 2 and 3 installed run `python3 -m advanced_lane_detection`).
 
 
 License
