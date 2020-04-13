@@ -455,3 +455,11 @@ def write_on_image(img, text, bottomLeftCornerOfText):
                 fontColor,
                 lineType)
     return
+
+    # Plot.
+    # f, (ax1, ax2) = plt.subplots(1, 2, figsize=(20,10))
+    # ax1.set_title('Source')
+    # ax1.imshow(image)
+    # ax2.set_title('Lanes')
+    # ax2.imshow(output_img)
+    # plt.waitforbuttonpress()

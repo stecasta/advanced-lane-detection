@@ -5,12 +5,10 @@
 
 Overview
 ---
-
 This project implements a pipeline to detect lane lines and approximate the radius of curvature of the lane and the position of the vehicle with respect to the lane center using Python and OpenCV.
 
 Content
 ---
-
 This repository contains:
 
 * The package `advanced_lane_detection` with the source code.
@@ -28,6 +26,39 @@ The module `advanced_lane_detection` contains:
 * The subpackage `utils`
     * The module "utils.py" that contains all the functions used to process the video frames.
 
-## How to write a README
-A well written README file can enhance your project and portfolio.  Develop your abilities to create professional README files by completing [this free course](https://www.udacity.com/course/writing-readmes--ud777).
+Dependencies
+---
+<!--TODO makefile.py + requirements.txt
+init:
+    pip install -r requirements.txt
 
+test:
+    py.test tests
+
+.PHONY: init test
+
+-->
+
+* Numpy
+* Matplotlib
+* OpenCV
+* Glob
+* Moviepy
+
+Usage
+---
+<!-- Dependencies-->
+**Step 1:** Download the repository. `> git clone https://github.com/stecasta/advanced-lane-detection.git`
+
+**Step 2:** Navigate to the package repository. `> cd advanced-lane-detection`
+
+**Step 3 (optional):** Change the line `clip1 = VideoFileClip("../project_video.mp4")
+` in "app.py" to load your own video. 
+
+**Step 4:** Run the script. The output video will be saved as "project_video_output.mp4" `python -m advanced_lane_detection`. (If you have both python 2 and 3 installed run `python3 -m advanced_lane_detection`).
+
+
+License
+---
+
+This project is licensed under the terms of the [MIT license](https://opensource.org/licenses/MIT).
