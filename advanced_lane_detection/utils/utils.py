@@ -35,34 +35,6 @@ def calibrate_cam(images, nx, ny):
             img = cv2.drawChessboardCorners(img, (nx, ny), corners, ret)
     return imgpoints, objpoints
 
-def cal_undistort(img, objpoints, imgpoints):
-    # This function that takes an image, object points, and image points
-    # performs the camera calibration, image distortion correction and
-    # returns the undistorted image
-    ret, mtx, dist, rvecs, tvecs = cv2.calibrateCamera(objpoints, imgpoints, img.shape[1:], None, None)
-    undist = cv2.undistort(img, mtx, dist, None, mtx)
-    return undist
-# plt.imshow(image)
-# plt.waitforbuttonpress(None)
-
-# f, (ax1, ax2) = plt.subplots(1, 2, figsize=(24, 9))
-# f.tight_layout()
-# ax1.imshow(image)
-# ax1.set_title('Original Image', fontsize=50)
-# ax2.imshow(undistorted)
-# ax2.set_title('Undistorted Image', fontsize=50)
-# plt.subplots_adjust(left=0., right=1, top=0.9, bottom=0.)
-# plt.waitforbuttonpress(None)
-
-# Perspective transform.
-# plt.imshow(image)
-# plt.plot(265, 674, '.')
-# plt.plot(1039, 674, '.')
-# plt.plot(552, 478, '.')
-# plt.plot(727, 478, '.')
-#
-# plt.waitforbuttonpress()
-
 def segment(img, s_thresh, sx_thresh):
     img = np.copy(img)
     # Convert to HLS color space and separate the V channel
@@ -432,11 +404,3 @@ def write_on_image(img, text, bottomLeftCornerOfText):
                 fontColor,
                 lineType)
     return
-
-    # Plot.
-    # f, (ax1, ax2) = plt.subplots(1, 2, figsize=(20,10))
-    # ax1.set_title('Source')
-    # ax1.imshow(image)
-    # ax2.set_title('Lanes')
-    # ax2.imshow(output_img)
-    # plt.waitforbuttonpress()

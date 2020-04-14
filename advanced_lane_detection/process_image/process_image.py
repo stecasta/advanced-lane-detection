@@ -4,13 +4,18 @@ import matplotlib.pyplot as plt
 import matplotlib.image as mpimg
 from advanced_lane_detection.utils import utils
 from advanced_lane_detection import config
-from advanced_lane_detection.process_image import lane
+import time
 
 
 def process_image(image):
 
+    # Measure elapsed time for processing one frame
+    # config.toc = time.time()
+    # print(config.toc - config.tic)
+    # config.tic = time.time()
+
     # Undistort image.
-    undistorted = utils.cal_undistort(image, config.objpoints, config.imgpoints)
+    undistorted = cv2.undistort(image, config.mtx, config.dist, None, config.mtx)
 
     # Create thresholded binary image.
     s_thresh=(170, 255) # saturation channel threshold
@@ -22,6 +27,7 @@ def process_image(image):
     # Warp image.
     warped_img = utils.warp(binary_img)
 
+    # Code for plotting perspective transform src and dest points
     # cv2.line(image, (203, 720), (1127, 720), (255, 0, 0), 4)
     # cv2.line(image, (585, 460), (695, 460), (255, 0, 0), 4)
     # cv2.line(image, (203, 720), (585, 460), (255, 0, 0), 4)
@@ -64,13 +70,5 @@ def process_image(image):
     utils.write_on_image(output_img, text1, (80, 50))
     text2 = "Vehicle is %.2f (m) %s of center." % (np.absolute(offset), pos)
     utils.write_on_image(output_img, text2, (80, 120))
-
-    # # Plot.
-    # f, (ax1, ax2) = plt.subplots(1, 2, figsize=(20, 10))
-    # ax1.set_title('Source')
-    # ax1.imshow(image)
-    # ax2.set_title('Lanes')
-    # ax2.imshow(output_img)
-    # plt.waitforbuttonpress()
 
     return output_img

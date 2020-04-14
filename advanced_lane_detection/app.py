@@ -1,4 +1,5 @@
 import glob
+import cv2
 from moviepy.editor import VideoFileClip
 import matplotlib.pyplot as plt
 import matplotlib.image as mpimg
@@ -12,10 +13,13 @@ def run():
     images = glob.glob('camera_cal/calibration*.jpg')  # images used for camera calibration
     nx = 9  # number of inside corners in x
     ny = 6  # number of inside corners in y
-    config.imgpoints, config.objpoints = utils.calibrate_cam(images, nx, ny)
+    imgpoints, objpoints = utils.calibrate_cam(images, nx, ny)
+    image = mpimg.imread("test_images/test2.jpg") # test image
+    config.ret, config.mtx, config.dist, config.rvecs, config.tvecs = cv2.calibrateCamera(objpoints, imgpoints,
+                                                                                          image.shape[1:], None,
+                                                                                          None)
 
     # # Test on image
-    # image = mpimg.imread("../test_images/test2.jpg")
     # output_img = process_image.process_image(image)
     # plt.imshow(output_img)
     # plt.waitforbuttonpress()
