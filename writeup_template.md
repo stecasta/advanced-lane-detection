@@ -19,7 +19,7 @@ The goals / steps of this project were the following:
 [image4]: ./output_images/warped-unwarped.png "Warp Example"
 [image5]: ./output_images/fitpoly.png "Fit Visual"
 [image6]: ./output_images/final.png "Output"
-[video1]: ./project_video.mp4 "Video"
+[video1]: ./project_video_output.mp4 "Video"
 
 ## [Rubric](https://review.udacity.com/#!/rubrics/571/view) Points
 
@@ -132,17 +132,32 @@ The function `find_lane_pixels()` performs an histogram to it and searches with 
    .polyfit` to the lanes pixels. 
    
    Moreover, a low pass filter is applied to make an average of the polynomial over
-    the last 10 frames. An example is showed in the figure below.
+    the last 10 frames. A sanity check is performed to make sure the slope of the two polynomial is similar. 
+    
+   An example is showed in the figure below.
 
 ![alt text][image5]
 
 #### 5. Describe how (and identify where in your code) you calculated the radius of curvature of the lane and the position of the vehicle with respect to center.
 
-I did this in lines # through # in my code in `my_other_file.py`
-
+I defined a function in "util.py" (321-354) `measure_curvature()` that takes the polynomial fit and return the
+ approximate radii of curvature of the lanes. The polynomial coefficients and the radius of curvature are converted
+  from pixels to meters by considering that the region considered corresponds to a 3.7x3.0 m region in the real world
+  . A sanity check is performed by making sure the radius of curvature for the two lanes is similar.
+  
+ Another function `measure_pos_in_lane` is defined in "utils.py" (356-391) that computes the approximate position of
+  the vehicle in the lane by considering the camera to be mounted in the center of the vehicle and therefore
+   calculating the offset from the computed lane center and the center of the image. A sanity check is performed to
+    make sure that the lane is approximately 3.7 m wide (standard US highways measure).
+   
+   Both the functions save the last values computed and average them over n frames. 
 #### 6. Provide an example image of your result plotted back down onto the road such that the lane area is identified clearly.
 
-I implemented this step in lines # through # in my code in `yet_another_file.py` in the function `map_lane()`.  Here is an example of my result on a test image:
+Finally the lanes are plotted back into the original image with the function `unwarp()` defined in "utils.py" (83-102
+) and the function `weighted_img()`. Additionally curvature and position information is displayed in the image. This
+ is done in the file `proces_image` from line 45 to line 66.
+ 
+ An example is shown in the figure below.
 
 ![alt text][image6]
 
@@ -152,7 +167,7 @@ I implemented this step in lines # through # in my code in `yet_another_file.py`
 
 #### 1. Provide a link to your final video output.  Your pipeline should perform reasonably well on the entire project video (wobbly lines are ok but no catastrophic failures that would cause the car to drive off the road!).
 
-Here's a [link to my video result](./project_video.mp4)
+Here's a [link to my video result](./project_video_output.mp4)
 
 ---
 
@@ -161,3 +176,24 @@ Here's a [link to my video result](./project_video.mp4)
 #### 1. Briefly discuss any problems / issues you faced in your implementation of this project.  Where will your pipeline likely fail?  What could you do to make it more robust?
 
 Here I'll talk about the approach I took, what techniques I used, what worked and why, where the pipeline might fail and how I might improve it if I were going to pursue this project further.  
+
+This pipeline aims at increasing robustness by combining different computer vision techniques for the detection of
+ lane lines. In particular, I used a sobelx filter to segment lines which are almost vertical in the image and I
+  applied a
+  threshold in the saturation channel, which should be the least affected by changes in light conditions. The two
+   binary images were then combined.
+  
+  In order to find the lane pixel I looked for peaks in the histogram of the combined binary image. This can lead to the
+   problem that a long shadow next to the lane could be misinterpreted for the lane.
+
+The hardest parts of the video for the algorithm were those in which there was a rapid chang of light or color of the
+ ground. I found that what worked best to overcome it was to put sanity checks and discard the data points that didn
+ 't pass them
+ . The
+  problem with this approach is that you are less reactive to quick changes. 
+
+In general, although doing the camera calibration only once improved the speed, the pipeline is rather slow and not
+ suited for real-time. In these terms, a possible improvement could be to re-write the pipeline in C++.
+ 
+ Future work could include using this pipeline as the labeler for a dataset used to train a neural network, which
+  should ideally be more robust to different conditions.
